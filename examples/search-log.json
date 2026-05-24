@@ -1,0 +1,7 @@
+{
+  "TopicId": "topic-xxxxxxxx",
+  "From": 1710000000,
+  "To": 1710003600,
+  "Query": "status:500",
+  "Limit": 20
+}

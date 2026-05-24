@@ -1,0 +1,34 @@
+{
+  "Name": "advanced-notice-policy",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "host:\"a.example.com\" AND status>=500 | select count(*) as error_count, max(latency_ms) as max_latency limit 100",
+      "Number": 1,
+      "StartTimeOffset": -15,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "MonitorTime": {"Type": "Period", "Time": 1},
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "AlarmNoticeIds": ["notice-xxx"],
+  "Status": true,
+  "MessageTemplate": "{{.Label}}",
+  "CallBack": {"Headers": [], "Body": ""},
+  "Analysis": [],
+  "GroupTriggerStatus": true,
+  "GroupTriggerCondition": [],
+  "Tags": [],
+  "MonitorObjectType": 0,
+  "Classifications": [],
+  "MultiConditions": [
+    {
+      "Condition": "[$1.__QUERYCOUNT__]> 100",
+      "ConditionInteractiveConfig": "{\"Value\":{\"type\":\"CONDITION\",\"level\":0,\"executeQueryIndex\":0,\"field\":\"__QUERYCOUNT__\",\"comparator\":\">\",\"value\":100},\"Children\":[],\"id\":\"config-xxx\"}",
+      "AlarmLevel": 0
+    }
+  ]
+}

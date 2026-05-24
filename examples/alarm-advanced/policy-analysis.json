@@ -1,0 +1,24 @@
+{
+  "Name": "advanced-analysis",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "status>=500 | select request_uri, count(*) as error_count group by request_uri order by error_count desc limit 10",
+      "Number": 1,
+      "StartTimeOffset": -5,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "MonitorTime": {"Type": "Period", "Time": 5},
+  "Condition": "$1.error_count > 100",
+  "Analysis": [
+    {"Name": "top_request_uri", "Fields": ["request_uri", "error_count"]}
+  ],
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "AlarmLevel": 1,
+  "Status": true,
+  "MonitorObjectType": 0
+}

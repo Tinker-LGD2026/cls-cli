@@ -1,0 +1,52 @@
+{
+  "Name": "analysis-classifications-policy",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "* | select count(*) as error_count",
+      "Number": 1,
+      "StartTimeOffset": -5,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "AlarmNoticeIds": ["notice-xxx"],
+  "Status": false,
+  "MonitorObjectType": 0,
+  "Condition": "$1.error_count > 0",
+  "AlarmLevel": 0,
+  "MonitorTime": {
+    "Type": "Cron",
+    "CronExpression": "0/5 * * * *"
+  },
+  "Analysis": [
+    {
+      "Name": "custom query",
+      "Type": "query",
+      "Content": "* | select count(*) as count",
+      "ConfigInfo": [{"Key": "SyntaxRule", "Value": "1"}]
+    },
+    {
+      "Name": "original logs",
+      "Type": "original",
+      "Content": "raw logs",
+      "ConfigInfo": [
+        {
+          "Key": "Fields",
+          "Value": "__SOURCE__,__HOSTNAME__,__TIMESTAMP__,__PKG_LOGID__"
+        },
+        {"Key": "QueryIndex", "Value": "1"},
+        {"Key": "Format", "Value": "2"},
+        {"Key": "Limit", "Value": "5"},
+        {"Key": "SyntaxRule", "Value": "1"}
+      ]
+    }
+  ],
+  "Classifications": [
+    {"Key": "service", "Value": "payment"},
+    {"Key": "env", "Value": "prod"}
+  ]
+}

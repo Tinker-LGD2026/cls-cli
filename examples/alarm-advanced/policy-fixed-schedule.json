@@ -1,0 +1,21 @@
+{
+  "Name": "advanced-fixed-schedule",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "status>=500 | select count(*) as error_count",
+      "Number": 1,
+      "StartTimeOffset": -60,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "MonitorTime": {"Type": "Fixed", "Time": "10:00"},
+  "Condition": "$1.error_count > 100",
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "AlarmLevel": 1,
+  "Status": true,
+  "MonitorObjectType": 0
+}

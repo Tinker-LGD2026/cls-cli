@@ -1,0 +1,70 @@
+{
+  "name": "payment-5xx-new-webhook",
+  "region": "ap-guangzhou",
+  "topic": {
+    "mode": "existing",
+    "logset_id": "logset-xxx",
+    "topic_id": "topic-xxx"
+  },
+  "integration": {
+    "mode": "existing",
+    "web_callback_id": "webcallback-created-from-env"
+  },
+  "notice_content": {
+    "mode": "create",
+    "payload": {
+      "Name": "payment-5xx-content",
+      "NoticeContents": [
+        {
+          "Type": "WeCom",
+          "TriggerContent": {
+            "Title": "【{{.Level_zh}}】{{.Alarm}}",
+            "Content": "告警：{{escape_markdown .Alarm}}\n条件：{{escape_markdown .Condition}}\n详情：{{escape_markdown .AnalysisResultFormat_zh}}"
+          }
+        }
+      ]
+    }
+  },
+  "notice": {
+    "mode": "create",
+    "payload": {
+      "Name": "payment-5xx-notice",
+      "Type": "All",
+      "WebCallbacks": [
+        {
+          "CallbackType": "WeCom",
+          "Url": "",
+          "WebCallbackId": "${integration.web_callback_id}",
+          "NoticeContentId": "${notice_content.notice_content_id}"
+        }
+      ]
+    }
+  },
+  "policy": {
+    "mode": "create",
+    "payload": {
+      "Name": "payment-5xx-policy",
+      "AlarmNoticeIds": [
+        "${notice.alarm_notice_id}"
+      ],
+      "AlarmTargets": [
+        {
+          "LogsetId": "${topic.logset_id}",
+          "TopicId": "${topic.topic_id}",
+          "Query": "status:>=500 | select count(*) as error_count",
+          "Number": 1,
+          "StartTimeOffset": -5,
+          "EndTimeOffset": 0,
+          "SyntaxRule": 1
+        }
+      ],
+      "Condition": "$1.error_count > 10",
+      "MonitorTime": {
+        "Type": "Period",
+        "Time": 5
+      },
+      "AlarmLevel": 0,
+      "Status": true
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "Rule": {
+    "FullText": {
+      "CaseSensitive": false,
+      "Tokenizer": "@&()='\",;:<>[]{}/ \\n\t\r"
+    },
+    "KeyValue": {
+      "CaseSensitive": false,
+      "KeyValues": [
+        {
+          "Key": "level",
+          "Value": {
+            "Type": "text",
+            "Tokenizer": "@&()='\",;:<>[]{}/ \\n\t\r",
+            "SqlFlag": true
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "Name": "advanced-multi-condition",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "status>=500 | select count(*) as error_count, approx_percentile(latency_ms, 0.95) as p95_latency",
+      "Number": 1,
+      "StartTimeOffset": -5,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "MonitorTime": {"Type": "Period", "Time": 5},
+  "MultiConditions": [
+    {"Condition": "$1.error_count > 100", "AlarmLevel": 1},
+    {"Condition": "$1.error_count > 500", "AlarmLevel": 2}
+  ],
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "Status": true,
+  "MonitorObjectType": 0
+}

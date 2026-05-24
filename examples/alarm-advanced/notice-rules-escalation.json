@@ -1,0 +1,25 @@
+{
+  "Name": "advanced-notice-rules-escalation",
+  "NoticeRules": [
+    {
+      "WebCallbacks": [
+        {
+          "CallbackType": "WeCom",
+          "WebCallbackId": "webcallback-primary",
+          "NoticeContentId": "noticetemplate-primary",
+          "Url": ""
+        }
+      ],
+      "EscalateNotice": {
+        "WebCallbacks": [
+          {
+            "CallbackType": "WeCom",
+            "WebCallbackId": "webcallback-escalation",
+            "NoticeContentId": "noticetemplate-escalation",
+            "Url": ""
+          }
+        ]
+      }
+    }
+  ]
+}

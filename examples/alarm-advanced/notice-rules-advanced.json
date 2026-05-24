@@ -1,0 +1,26 @@
+{
+  "Type": "",
+  "Name": "advanced-notice-rules",
+  "NoticeReceivers": [],
+  "WebCallbacks": [],
+  "NoticeRules": [
+    {
+      "Rule": "{\"Value\":\"AND\",\"Type\":\"Operation\",\"Children\":[{\"Type\":\"Condition\",\"Value\":\"NotifyType\",\"Children\":[{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[1,2]\",\"Type\":\"Value\"}]},{\"Value\":\"AND\",\"Type\":\"Operation\",\"Children\":[{\"Type\":\"Condition\",\"Value\":\"Level\",\"Children\":[{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[1,0]\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"NotifyTime\",\"Children\":[{\"Value\":\"Between\",\"Type\":\"Compare\"},{\"Value\":\"[\\\"12:23:29\\\",\\\"12:38:29\\\"]\",\"Type\":\"Value\"}]}]}]}",
+      "NoticeReceivers": [
+        {
+          "ReceiverType": "Uin",
+          "ReceiverIds": [1000001],
+          "ReceiverChannels": ["Email"],
+          "StartTime": "00:00:00",
+          "EndTime": "23:59:59",
+          "Index": 1,
+          "NoticeContentId": ""
+        }
+      ],
+      "WebCallbacks": [],
+      "Escalate": false
+    }
+  ],
+  "AlarmShieldStatus": 2,
+  "CallbackPrioritize": false
+}

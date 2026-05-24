@@ -1,0 +1,33 @@
+{
+  "Name": "advanced-notice-generated",
+  "Type": "",
+  "NoticeReceivers": [],
+  "WebCallbacks": [],
+  "NoticeRules": [
+    {
+      "Rule": "{\"Value\":\"AND\",\"Type\":\"Operation\",\"Children\":[{\"Type\":\"Condition\",\"Value\":\"NotifyType\",\"Children\":[{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[1,2]\",\"Type\":\"Value\"}]}]}",
+      "NoticeReceivers": [
+        {
+          "ReceiverType": "Uin",
+          "ReceiverIds": [1000001],
+          "ReceiverChannels": ["Email"],
+          "StartTime": "00:00:00",
+          "EndTime": "23:59:59",
+          "Index": 1,
+          "NoticeContentId": ""
+        }
+      ],
+      "WebCallbacks": [
+        {
+          "CallbackType": "WeCom",
+          "Url": "",
+          "WebCallbackId": "webcallback-xxx",
+          "NoticeContentId": "notice-content-xxx"
+        }
+      ],
+      "Escalate": false
+    }
+  ],
+  "AlarmShieldStatus": 2,
+  "CallbackPrioritize": false
+}

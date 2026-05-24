@@ -1,0 +1,61 @@
+{
+  "name": "dry-run-demo",
+  "region": "ap-guangzhou",
+  "topic": {
+    "mode": "existing",
+    "logset_id": "logset-demo",
+    "topic_id": "topic-demo"
+  },
+  "integration": {
+    "mode": "existing",
+    "web_callback_id": "webcallback-demo"
+  },
+  "notice_content": {
+    "mode": "create",
+    "payload": {
+      "Name": "dry-run-demo-content",
+      "NoticeContents": [
+        {
+          "Type": "WeCom",
+          "TriggerContent": {
+            "Title": "【{{.Level_zh}}】{{.Alarm}}",
+            "Content": "告警：{{escape_markdown .Alarm}}\n条件：{{escape_markdown .Condition}}"
+          }
+        }
+      ]
+    }
+  },
+  "notice": {
+    "mode": "create",
+    "payload": {
+      "Name": "dry-run-demo-notice",
+      "Type": "All",
+      "WebCallbacks": [
+        {
+          "CallbackType": "WeCom",
+          "Url": "",
+          "WebCallbackId": "${integration.web_callback_id}",
+          "NoticeContentId": "${notice_content.notice_content_id}"
+        }
+      ]
+    }
+  },
+  "policy": {
+    "mode": "create",
+    "payload": {
+      "Name": "dry-run-demo-policy",
+      "AlarmNoticeIds": [
+        "${notice.alarm_notice_id}"
+      ],
+      "AlarmTargets": [
+        {
+          "LogsetId": "${topic.logset_id}",
+          "TopicId": "${topic.topic_id}",
+          "Query": "* | select count(*) as event_count",
+          "Number": 1
+        }
+      ],
+      "Condition": "$1.event_count > 0"
+    }
+  }
+}

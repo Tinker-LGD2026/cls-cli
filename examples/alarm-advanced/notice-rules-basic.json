@@ -1,0 +1,15 @@
+{
+  "Name": "advanced-notice-rules-basic",
+  "NoticeRules": [
+    {
+      "WebCallbacks": [
+        {
+          "CallbackType": "WeCom",
+          "WebCallbackId": "webcallback-xxx",
+          "NoticeContentId": "noticetemplate-xxx",
+          "Url": ""
+        }
+      ]
+    }
+  ]
+}

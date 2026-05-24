@@ -1,0 +1,16 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+.tmp/
+.tmp-browser/
+.DS_Store
+.worktrees/
+
+.codebuddy/
+需求背景.md

@@ -1,0 +1,37 @@
+{
+  "Name": "channel-notice-rule-variants",
+  "Type": "",
+  "NoticeReceivers": [],
+  "WebCallbacks": [],
+  "NoticeRules": [
+    {
+      "Rule": "{\"Value\":\"AND\",\"Type\":\"Operation\",\"Children\":[{\"Type\":\"Condition\",\"Value\":\"NotifyType\",\"Children\":[{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[1,2]\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"Level\",\"Children\":[{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[1,0]\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"NotifyTime\",\"Children\":[{\"Value\":\"Between\",\"Type\":\"Compare\"},{\"Value\":\"[\\\"09:00:00\\\",\\\"18:00:00\\\"]\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"Duration\",\"Children\":[{\"Value\":\">\",\"Type\":\"Compare\"},{\"Value\":1,\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"AlarmName\",\"Children\":[{\"Value\":\"=~\",\"Type\":\"Compare\"},{\"Value\":\"^cls-cli-.*\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"Label\",\"Children\":[{\"Value\":\"service\",\"Type\":\"Key\"},{\"Value\":\"In\",\"Type\":\"Compare\"},{\"Value\":\"[\\\"payment\\\"]\",\"Type\":\"Value\"}]},{\"Type\":\"Condition\",\"Value\":\"Label\",\"Children\":[{\"Value\":\"env\",\"Type\":\"Key\"},{\"Value\":\"=~\",\"Type\":\"Compare\"},{\"Value\":\"prod|staging\",\"Type\":\"Value\"}]}]}",
+      "NoticeReceivers": [],
+      "WebCallbacks": [
+        {
+          "CallbackType": "Http",
+          "Url": "",
+          "WebCallbackId": "webcallback-xxx",
+          "NoticeContentId": "noticetemplate-xxx",
+          "Method": "POST"
+        }
+      ],
+      "Escalate": true,
+      "Interval": 1,
+      "Type": 2,
+      "EscalateNotice": {
+        "WebCallbacks": [
+          {
+            "CallbackType": "Http",
+            "Url": "",
+            "WebCallbackId": "webcallback-escalate-xxx",
+            "NoticeContentId": "noticetemplate-escalate-xxx",
+            "Method": "POST"
+          }
+        ]
+      }
+    }
+  ],
+  "AlarmShieldStatus": 2,
+  "CallbackPrioritize": false
+}

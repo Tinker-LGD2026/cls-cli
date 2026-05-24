@@ -1,0 +1,9 @@
+{
+  "Name": "high-error-rate",
+  "Status": true,
+  "AlarmTargets": [],
+  "MonitorTime": {
+    "Type": "Period",
+    "Time": 5
+  }
+}

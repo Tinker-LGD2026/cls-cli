@@ -1,0 +1,26 @@
+{
+  "Name": "advanced-callback",
+  "AlarmTargets": [
+    {
+      "LogsetId": "logset-xxx",
+      "TopicId": "topic-xxx",
+      "Query": "status>=500 | select count(*) as error_count",
+      "Number": 1,
+      "StartTimeOffset": -5,
+      "EndTimeOffset": 0,
+      "SyntaxRule": 1
+    }
+  ],
+  "MonitorTime": {"Type": "Period", "Time": 5},
+  "Condition": "$1.error_count > 100",
+  "CallBack": {
+    "Url": "https://example.com/alarm-callback",
+    "Headers": [{"Key": "X-Source", "Value": "cls-cli"}],
+    "Body": "{\"alarm\":\"{{.Alarm}}\",\"condition\":\"{{.Condition}}\"}"
+  },
+  "TriggerCount": 1,
+  "AlarmPeriod": 15,
+  "AlarmLevel": 1,
+  "Status": true,
+  "MonitorObjectType": 0
+}

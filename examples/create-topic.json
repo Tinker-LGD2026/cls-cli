@@ -1,0 +1,5 @@
+{
+  "TopicName": "app-log",
+  "PartitionCount": 1,
+  "Tags": []
+}
