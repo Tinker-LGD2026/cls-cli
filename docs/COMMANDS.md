@@ -36,6 +36,8 @@ cls alarm template generate --scenario http-5xx --channel webhook --fields reque
 cls alarm template validate --payload @notice-content.json --policy-payload @alarm-policy.json
 cls alarm template render --payload @notice-content.json --sample-context @sample-alert-context.json
 CLS_ALARM_WEBHOOK_URL='企业微信机器人Webhook地址' cls alarm integration create --name prod-wecom --type wecom --webhook-env CLS_ALARM_WEBHOOK_URL --region ap-guangzhou
+cls alarm integration list --region ap-guangzhou --all
+cls alarm integration list --region ap-guangzhou --offset 0 --limit 20
 cls alarm notice scaffold --name prod-notice --callback-type wecom --integration-id webcallback-xxx --content-id notice-content-xxx
 cls alarm notice scaffold --name advanced-notice --advanced-rule --rule '{"Value":"AND","Type":"Operation","Children":[{"Type":"Condition","Value":"NotifyType","Children":[{"Value":"In","Type":"Compare"},{"Value":"[1,2]","Type":"Value"}]}]}' --callback-type wecom --integration-id webcallback-xxx --content-id notice-content-xxx --receiver-id 1000001 --receiver-channel Email
 CLS_ALARM_TEST_WEBHOOK_URL='企业微信机器人Webhook地址' cls alarm template send-test --robot wecom --payload @notice-content.json --sample-context @sample-alert-context.json
@@ -83,7 +85,7 @@ cls alarm policy create --payload @examples/create-alarm.json --region ap-guangz
 - `alarm template validate` 校验通知模板变量、Webhook JSON 转义，并可结合 `--policy-payload` 检查 `QueryResult` 字段是否由策略查询输出。
 - `alarm template render` 使用样例告警上下文本地渲染触发/恢复通知内容，便于上线前确认客户最终看到的消息。
 - `alarm template send-test` 将渲染后的触发通知以企业微信机器人 markdown 消息发送到 `CLS_ALARM_TEST_WEBHOOK_URL`，只用于验证机器人展示效果；Webhook 地址只从环境变量读取，避免写入文件或命令参数。
-- `alarm integration create|update|delete|list` 管理控制台“集成配置”，底层对应 `CreateWebCallback` 等 API；`create/update` 可通过 `--webhook-env`、`--key-env` 从环境变量读取机器人地址和私钥，输出会脱敏。
+- `alarm integration create|update|delete|list` 管理控制台“集成配置”，底层对应 `CreateWebCallback` 等 API；`create/update` 可通过 `--webhook-env`、`--key-env` 从环境变量读取机器人地址和私钥，输出会脱敏。`list` 默认按 `--offset 0 --limit 20` 拉取单页，并在 JSON 中输出 `total_count`、`fetched_count`、`truncated`、`page_count` 和 `request_ids`；需要拿全量时使用 `--all`，避免 Agent 把第一页误判为全量。
 - `alarm integration scaffold|validate` 生成和校验集成配置 payload，支持 `wecom|dingtalk|feishu|http`，其中 `http` 必须指定 `POST|PUT`。
 - `alarm notice scaffold` 生成通知渠道组 payload，推荐通过 `WebCallbacks[].WebCallbackId` 引用已创建集成配置，并绑定 `NoticeContentId`；加 `--advanced-rule` 可生成控制台确认结构的 `NoticeRules`，支持 `--rule` JSON 规则字符串，或使用浏览器真实验证过的规则树参数：`--rule-notify-type`、`--rule-level`、`--rule-notify-time-between`、`--rule-duration-gt`、`--rule-alarm-name-regex`、`--rule-label-in key=v1,v2`、`--rule-label-regex key=regex`；同时支持 `--receiver-id/--receiver-channel` 接收人、`--escalate*` 升级通知和 `--callback-prioritize`。`alarm notice validate` 会检查 `Url` 与 `WebCallbackId` 的互斥规则，并对控制台确认的 `NoticeRules[].Rule` JSON 字符串、`NoticeReceivers`、`WebCallbacks`、`Escalate`、`EscalateNotice`、`CallbackPrioritize` 和疑似时间段字段做确定性结构校验。
 - `alarm policy scaffold` 支持两种模式：不传 `--query/--condition` 时生成内置 `http-5xx` 示例策略；传入 `--query` 和 `--condition` 时使用通用模式，把 `cls ai generate-query` 或人工确认后的检索分析语句组装成策略 payload。高级策略可用 `--multi-condition-expr/--multi-condition-level` 生成 `MultiConditions`，用 `--group-by` 生成分组触发字段，用 `--callback-body/--callback-header` 生成策略级 `CallBack`；浏览器真实验证过的 `--monitor-type fixed|cron`、`--cron-expression`、`--analysis-query`、`--analysis-original-fields`、`--classification key=value` 可生成固定/cron 调度、多维分析和告警分类；复杂字段仍可用 `@file.json` 透传。生成 `MultiConditions` 时会按官方互斥规则省略 `Condition/AlarmLevel`。

@@ -13,7 +13,7 @@ from cls_cli.core.alarm_integrations import (
     validate_integration_payload,
 )
 from cls_cli.core.config import store_from_obj
-from cls_cli.core.errors import CliError, ConfirmationRequired
+from cls_cli.core.errors import CliError, ConfirmationRequired, InputError
 from cls_cli.core.execution import _client, _obj, _resolve_region
 from cls_cli.core.input import load_json_payload
 from cls_cli.core.output import emit_data, emit_error
@@ -27,15 +27,24 @@ app = typer.Typer(
 @app.command("list")
 def list_integrations(
     ctx: typer.Context,
+    payload: str | None = typer.Option(None, "--payload"),
+    offset: int | None = typer.Option(None, "--offset", min=0),
+    limit: int | None = typer.Option(None, "--limit", min=1),
+    fetch_all: bool = typer.Option(False, "--all"),
     region: str | None = typer.Option(None, "--region"),
     profile: str | None = typer.Option(None, "--profile"),
     output: str = typer.Option("json", "--output"),
 ) -> None:
     try:
-        _run_sanitized_action(
+        body = load_json_payload(payload) if payload else {}
+        _run_paginated_list(
             ctx,
             "alarm.integration.list",
-            {},
+            body,
+            item_key="WebCallbacks",
+            offset=offset,
+            limit=limit,
+            fetch_all=fetch_all,
             region=region,
             profile=profile,
             output=output,
@@ -189,6 +198,88 @@ def delete_integration(
     except CliError as exc:
         emit_error(exc)
         raise typer.Exit(exc.exit_code) from exc
+
+
+def _run_paginated_list(
+    ctx: typer.Context,
+    spec_key: str,
+    body: dict[str, Any],
+    *,
+    item_key: str,
+    offset: int | None,
+    limit: int | None,
+    fetch_all: bool,
+    region: str | None,
+    profile: str | None,
+    output: str,
+) -> None:
+    spec = get_spec(spec_key)
+    store = store_from_obj(_obj(ctx))
+    profile_obj = store.get_profile(profile)
+    selected_region = _resolve_region(region, profile_obj)
+    client = _client(ctx, profile_obj)
+
+    page_offset = _int_value(offset if offset is not None else body.get("Offset"), default=0)
+    page_limit = _int_value(limit if limit is not None else body.get("Limit"), default=20)
+    if page_offset < 0:
+        raise InputError("offset must be greater than or equal to 0")
+    if page_limit <= 0:
+        raise InputError("limit must be greater than 0")
+
+    base_body = dict(body)
+    all_items: list[Any] = []
+    request_ids: list[str] = []
+    page_count = 0
+    total_count: int | None = None
+    last_response: dict[str, Any] | None = None
+    current_offset = page_offset
+
+    while True:
+        request_body = dict(base_body)
+        request_body["Offset"] = current_offset
+        request_body["Limit"] = page_limit
+        result = client.invoke(spec.action, request_body, selected_region)
+        response = result.get("Response", {}) if isinstance(result.get("Response"), dict) else {}
+        last_response = dict(response)
+        page_count += 1
+        request_id = response.get("RequestId")
+        if request_id:
+            request_ids.append(str(request_id))
+        page_items = response.get(item_key)
+        if not isinstance(page_items, list):
+            page_items = []
+        all_items.extend(page_items)
+        total_count = _int_value(response.get("TotalCount"), default=len(all_items))
+        if not fetch_all:
+            break
+        if len(all_items) >= total_count:
+            break
+        if not page_items:
+            break
+        current_offset += page_limit
+
+    merged_response = dict(last_response or {})
+    merged_response[item_key] = all_items
+    if total_count is not None:
+        merged_response["TotalCount"] = total_count
+    metadata = {
+        "Response": merged_response,
+        "total_count": total_count if total_count is not None else len(all_items),
+        "fetched_count": len(all_items),
+        "truncated": (page_offset + len(all_items)) < (total_count or len(all_items)),
+        "offset": page_offset,
+        "limit": page_limit,
+        "page_count": page_count,
+        "request_ids": request_ids,
+    }
+    emit_data(sanitize_sensitive(metadata), output)
+
+
+def _int_value(value: Any, *, default: int) -> int:
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 def _run_sanitized_action(

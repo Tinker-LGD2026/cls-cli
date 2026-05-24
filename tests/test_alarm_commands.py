@@ -50,7 +50,12 @@ def test_alarm_integration_list_invokes_describe_web_callbacks(runner, cli_obj, 
     )
 
     assert result.exit_code == 0, result.stdout
-    assert fake_client.calls == [("DescribeWebCallbacks", {}, "ap-guangzhou")]
+    assert fake_client.calls == [
+        ("DescribeWebCallbacks", {"Offset": 0, "Limit": 20}, "ap-guangzhou")
+    ]
+    data = json_output(result)["data"]
+    assert data["fetched_count"] == 0
+    assert data["truncated"] is False
 
 
 def test_alarm_integration_create_reads_webhook_from_env_and_redacts_output(
