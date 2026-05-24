@@ -20,7 +20,7 @@ def test_alarm_policy_list_accepts_payload_filters(runner, cli_obj, fake_client,
     assert fake_client.calls == [
         (
             "DescribeAlarms",
-            {"Filters": [{"Name": "topicId", "Values": ["topic-123"]}], "Offset": 0, "Limit": 20},
+            {"Filters": [{"Key": "topicId", "Values": ["topic-123"]}], "Offset": 0, "Limit": 20},
             "ap-shanghai",
         )
     ]
@@ -53,7 +53,7 @@ def test_alarm_policy_get_filters_by_alarm_id(runner, cli_obj, fake_client):
     assert fake_client.calls == [
         (
             "DescribeAlarms",
-            {"Filters": [{"Name": "alarmId", "Values": ["alarm-123"]}], "Offset": 0, "Limit": 1},
+            {"Filters": [{"Key": "alarmId", "Values": ["alarm-123"]}], "Offset": 0, "Limit": 1},
             "ap-shanghai",
         )
     ]

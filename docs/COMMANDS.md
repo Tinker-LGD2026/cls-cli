@@ -46,6 +46,7 @@ cls alarm policy scaffold --scenario http-5xx --name 'api 5xx' --logset-id logse
 cls alarm policy scaffold --name '域名5xx多级告警' --logset-id logset-xxx --topic-id topic-xxx --query 'host:"a.example.com" AND status>=500 | select count(*) as error_count, request_uri group by request_uri' --condition '$1.error_count > 100' --multi-condition-expr '$1.error_count > 100' --multi-condition-level 1 --multi-condition-expr '$1.error_count > 500' --multi-condition-level 2 --group-by request_uri
 cls alarm policy validate --payload @examples/alarm-advanced/policy-multi-conditions.json
 cls alarm policy list --payload @describe-alarms-filter.json --region ap-guangzhou
+# describe-alarms-filter.json 中 Filters 使用 Key/Values，例如 {"Filters":[{"Key":"topicId","Values":["topic-xxx"]}],"Offset":0,"Limit":20}
 cls alarm policy get --alarm-id alarm-xxx --region ap-guangzhou
 cls alarm notice validate --payload @examples/alarm-advanced/notice-rules-basic.json
 cls alarm policy test-query --payload @alarm-policy.json --from 1710000000 --to 1710003600 --region ap-guangzhou

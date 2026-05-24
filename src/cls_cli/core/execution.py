@@ -33,6 +33,7 @@ def run_action(
         selected_region = _resolve_region(region, profile_obj)
         body = load_json_payload(payload)
         body.update(compact_payload(explicit_payload or {}))
+        body = _normalize_action_payload(spec_key, body)
         validate_action_payload(spec_key, body, skip_validation=skip_validation)
         if spec.destructive and not force and not dry_run:
             raise ConfirmationRequired(
@@ -55,6 +56,29 @@ def run_action(
     except CliError as exc:
         emit_error(exc)
         raise typer.Exit(exc.exit_code) from exc
+
+
+def _normalize_action_payload(spec_key: str, body: dict[str, Any]) -> dict[str, Any]:
+    if spec_key != "alarm.policy.list":
+        return body
+    filters = body.get("Filters")
+    if not isinstance(filters, list):
+        return body
+    normalized_filters: list[Any] = []
+    changed = False
+    for item in filters:
+        if isinstance(item, dict) and "Key" not in item and "Name" in item:
+            normalized = dict(item)
+            normalized["Key"] = normalized.pop("Name")
+            normalized_filters.append(normalized)
+            changed = True
+        else:
+            normalized_filters.append(item)
+    if not changed:
+        return body
+    normalized_body = dict(body)
+    normalized_body["Filters"] = normalized_filters
+    return normalized_body
 
 
 def _obj(ctx: typer.Context) -> dict[str, Any] | None:
