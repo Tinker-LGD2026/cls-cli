@@ -10,6 +10,7 @@ from cls_cli.core.alarm_bundle_plan import plan_alarm_bundle
 from cls_cli.core.errors import ConfirmationRequired, InputError
 
 BUNDLE_TOKEN_RE = re.compile(r"\$\{([a-z_]+)\.([a-z_]+)\}")
+EXACT_CONFIRMATION_TEXT = "同意执行"
 
 WRITE_ACTIONS = {
     ("topic", "create"): ("topic.create", "CreateTopic", "TopicId", "topic_id"),
@@ -64,11 +65,20 @@ DELETE_ACTIONS = {
 
 
 def apply_alarm_bundle(
-    client: Any, bundle: dict[str, Any], region: str, *, confirm_real_write: bool
+    client: Any,
+    bundle: dict[str, Any],
+    region: str,
+    *,
+    confirm_real_write: bool,
+    confirmation_text: str | None = None,
 ) -> dict[str, Any]:
     if not confirm_real_write:
         raise ConfirmationRequired(
             "pass --confirm-real-write to create or update alarm bundle resources"
+        )
+    if confirmation_text != EXACT_CONFIRMATION_TEXT:
+        raise ConfirmationRequired(
+            "exact confirmation text is required: 同意执行"
         )
     plan = plan_alarm_bundle(bundle)
     if not plan["valid"]:
@@ -105,7 +115,12 @@ def apply_alarm_bundle(
         return {"status": "PASS", "plan": plan, "manifest": manifest, "rollback": []}
     except Exception as exc:
         rollback = rollback_alarm_bundle(
-            client, manifest, region, force=True, only_resources=completed
+            client,
+            manifest,
+            region,
+            force=True,
+            only_resources=completed,
+            require_confirmation=False,
         )
         return {
             "status": "FAIL",
@@ -123,9 +138,15 @@ def rollback_alarm_bundle(
     *,
     force: bool,
     only_resources: list[str] | None = None,
+    confirmation_text: str | None = None,
+    require_confirmation: bool = True,
 ) -> dict[str, Any]:
     if not force:
         raise ConfirmationRequired("rollback deletes created resources; pass --force")
+    if require_confirmation and confirmation_text != EXACT_CONFIRMATION_TEXT:
+        raise ConfirmationRequired(
+            "exact confirmation text is required for rollback: 同意执行"
+        )
     resources = manifest.get("resources")
     if not isinstance(resources, dict):
         raise InputError("manifest.resources must be an object")

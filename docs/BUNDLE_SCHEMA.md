@@ -218,7 +218,7 @@ Token preflight runs before cloud writes in `apply`. If a token cannot be resolv
 
 ## Manifest behavior
 
-`bundle apply` returns a manifest containing region and resource IDs. Sensitive fields such as `Webhook` and `Key` are redacted from output.
+`bundle apply` returns a manifest containing region and resource IDs. Sensitive fields such as `Webhook` and `Key` are redacted from output. For real writes, pass `--manifest-out manifest.json` so failed-apply recovery has an explicit rollback source.
 
 Example shape:
 
@@ -243,10 +243,10 @@ Rollback deletes only resources with `mode=create` in the manifest. Deletion ord
 policy -> notice -> notice_content -> integration -> topic
 ```
 
-Rollback requires `--force`:
+Rollback requires `--force` and exact confirmation text:
 
 ```bash
-cls alarm bundle rollback --manifest @manifest.json --region ap-guangzhou --force
+cls alarm bundle rollback --manifest @manifest.json --region ap-guangzhou --force --confirmation-text 同意执行
 ```
 
 Review the manifest source and region before rollback. Manifest checksum and trusted-manifest enforcement are future hardening items.

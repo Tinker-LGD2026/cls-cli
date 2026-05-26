@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import typer
 
 from cls_cli.core.alarm_bundle_apply import apply_alarm_bundle, rollback_alarm_bundle
@@ -54,6 +57,8 @@ def apply_bundle(
     region: str | None = typer.Option(None, "--region"),
     profile: str | None = typer.Option(None, "--profile"),
     confirm_real_write: bool = typer.Option(False, "--confirm-real-write"),
+    confirmation_text: str | None = typer.Option(None, "--confirmation-text"),
+    manifest_out: str | None = typer.Option(None, "--manifest-out"),
     output: str = typer.Option("json", "--output"),
 ) -> None:
     try:
@@ -66,13 +71,25 @@ def apply_bundle(
             body,
             selected_region,
             confirm_real_write=confirm_real_write,
+            confirmation_text=confirmation_text,
         )
+        if manifest_out and isinstance(result.get("manifest"), dict):
+            _write_json_file(manifest_out, result["manifest"])
         emit_data(sanitize_sensitive(result), output)
         if result.get("status") == "FAIL":
             raise typer.Exit(1)
     except CliError as exc:
         emit_error(exc)
         raise typer.Exit(exc.exit_code) from exc
+
+
+def _write_json_file(path: str, data: dict[str, object]) -> None:
+    target = Path(path).expanduser()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        json.dumps(data, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 @app.command("rollback")
@@ -82,6 +99,7 @@ def rollback_bundle(
     region: str | None = typer.Option(None, "--region"),
     profile: str | None = typer.Option(None, "--profile"),
     force: bool = typer.Option(False, "--force"),
+    confirmation_text: str | None = typer.Option(None, "--confirmation-text"),
     output: str = typer.Option("json", "--output"),
 ) -> None:
     try:
@@ -90,7 +108,11 @@ def rollback_bundle(
         body = load_json_payload(manifest)
         selected_region = _resolve_region(region or body.get("region"), profile_obj)
         result = rollback_alarm_bundle(
-            _client(ctx, profile_obj), body, selected_region, force=force
+            _client(ctx, profile_obj),
+            body,
+            selected_region,
+            force=force,
+            confirmation_text=confirmation_text,
         )
         emit_data(sanitize_sensitive(result), output)
         if result.get("status") == "PARTIAL":

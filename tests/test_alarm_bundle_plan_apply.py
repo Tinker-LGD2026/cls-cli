@@ -153,7 +153,16 @@ def test_alarm_bundle_apply_injects_ids_and_returns_manifest(
 
     result = runner.invoke(
         app,
-        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+        ],
         obj=cli_obj,
     )
 
@@ -169,6 +178,102 @@ def test_alarm_bundle_apply_injects_ids_and_returns_manifest(
     assert notice_payload["WebCallbacks"][0]["NoticeContentId"] == "content-123"
     assert policy_payload["AlarmNoticeIds"] == ["notice-123"]
     assert policy_payload["AlarmTargets"][0]["TopicId"] == "topic-123"
+
+
+def test_alarm_bundle_apply_requires_exact_confirmation_text(runner, cli_obj, tmp_path):
+    bundle = tmp_path / "bundle.json"
+    bundle.write_text(
+        json.dumps(
+            {
+                "region": "ap-shanghai",
+                "policy": {
+                    "mode": "create",
+                    "payload": {
+                        "Name": "policy",
+                        "AlarmTargets": [
+                            {"Query": "* | select count(*) as error_count", "Number": 1}
+                        ],
+                        "Condition": "$1.error_count > 0",
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    missing = runner.invoke(
+        app,
+        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        obj=cli_obj,
+    )
+    typo = runner.invoke(
+        app,
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执",
+        ],
+        obj=cli_obj,
+    )
+
+    assert missing.exit_code == 1
+    assert typo.exit_code == 1
+    assert "同意执行" in missing.stdout
+    assert "同意执行" in typo.stdout
+
+
+def test_alarm_bundle_apply_writes_manifest_out(runner, cli_obj, fake_client, tmp_path):
+    fake_client.responses = {
+        "CreateAlarm": {"Response": {"AlarmId": "alarm-123", "RequestId": "req-alarm"}}
+    }
+    bundle = tmp_path / "bundle.json"
+    manifest = tmp_path / "manifest.json"
+    bundle.write_text(
+        json.dumps(
+            {
+                "region": "ap-shanghai",
+                "policy": {
+                    "mode": "create",
+                    "payload": {
+                        "Name": "policy",
+                        "AlarmTargets": [
+                            {"Query": "* | select count(*) as error_count", "Number": 1}
+                        ],
+                        "Condition": "$1.error_count > 0",
+                    },
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    result = runner.invoke(
+        app,
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+            "--manifest-out",
+            str(manifest),
+        ],
+        obj=cli_obj,
+    )
+
+    assert result.exit_code == 0, result.stdout
+    assert json.loads(manifest.read_text(encoding="utf-8"))["resources"]["policy"] == {
+        "mode": "create",
+        "alarm_id": "alarm-123",
+    }
 
 
 def test_alarm_bundle_apply_can_create_topic_and_inject_topic_id(
@@ -209,7 +314,16 @@ def test_alarm_bundle_apply_can_create_topic_and_inject_topic_id(
 
     result = runner.invoke(
         app,
-        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+        ],
         obj=cli_obj,
     )
 
@@ -281,7 +395,16 @@ def test_alarm_bundle_apply_failure_rolls_back_created_resources(
 
     result = runner.invoke(
         app,
-        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+        ],
         obj=cli_obj,
     )
 
@@ -311,6 +434,50 @@ def test_alarm_bundle_status_reports_manifest_resources(runner, tmp_path):
     assert data["resources"] == {"policy": {"mode": "create", "alarm_id": "alarm-123"}}
 
 
+def test_alarm_bundle_rollback_requires_exact_confirmation_text(runner, cli_obj, tmp_path):
+    manifest = tmp_path / "manifest.json"
+    manifest.write_text(
+        json.dumps({"resources": {"policy": {"mode": "create", "alarm_id": "alarm-123"}}}),
+        encoding="utf-8",
+    )
+
+    missing = runner.invoke(
+        app,
+        [
+            "alarm",
+            "bundle",
+            "rollback",
+            "--manifest",
+            f"@{manifest}",
+            "--region",
+            "ap-shanghai",
+            "--force",
+        ],
+        obj=cli_obj,
+    )
+    typo = runner.invoke(
+        app,
+        [
+            "alarm",
+            "bundle",
+            "rollback",
+            "--manifest",
+            f"@{manifest}",
+            "--region",
+            "ap-shanghai",
+            "--force",
+            "--confirmation-text",
+            "同意执",
+        ],
+        obj=cli_obj,
+    )
+
+    assert missing.exit_code == 1
+    assert typo.exit_code == 1
+    assert "同意执行" in missing.stdout
+    assert "同意执行" in typo.stdout
+
+
 def test_alarm_bundle_rollback_reports_missing_created_resource_id(runner, cli_obj, tmp_path):
     manifest = tmp_path / "manifest.json"
     manifest.write_text(
@@ -329,6 +496,8 @@ def test_alarm_bundle_rollback_reports_missing_created_resource_id(runner, cli_o
             "--region",
             "ap-shanghai",
             "--force",
+            "--confirmation-text",
+            "同意执行",
         ],
         obj=cli_obj,
     )
@@ -369,6 +538,8 @@ def test_alarm_bundle_rollback_deletes_created_resources_in_reverse_order(
             "--region",
             "ap-shanghai",
             "--force",
+            "--confirmation-text",
+            "同意执行",
         ],
         obj=cli_obj,
     )
@@ -410,7 +581,16 @@ def test_alarm_bundle_apply_does_not_expose_integration_secrets_in_manifest(
 
     result = runner.invoke(
         app,
-        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+        ],
         obj=cli_obj,
     )
 
@@ -482,7 +662,16 @@ def test_alarm_bundle_apply_preflights_unresolved_tokens_before_cloud_writes(
 
     result = runner.invoke(
         app,
-        ["alarm", "bundle", "apply", "--bundle", f"@{bundle}", "--confirm-real-write"],
+        [
+            "alarm",
+            "bundle",
+            "apply",
+            "--bundle",
+            f"@{bundle}",
+            "--confirm-real-write",
+            "--confirmation-text",
+            "同意执行",
+        ],
         obj=cli_obj,
     )
 
