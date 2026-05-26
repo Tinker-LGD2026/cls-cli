@@ -106,7 +106,7 @@ export CLS_ALARM_TEST_WEBHOOK_URL='企业微信机器人Webhook地址'
 uv run cls alarm template send-test --robot wecom --payload @notice-content.json --sample-context @sample-alert-context.json
 export CLS_ALARM_TEST_FEISHU_WEBHOOK_URL='飞书机器人Webhook地址'
 uv run cls alarm template send-test --robot feishu --webhook-url-env CLS_ALARM_TEST_FEISHU_WEBHOOK_URL --payload @notice-content.json --sample-context @sample-alert-context.json
-uv run cls alarm policy scaffold --scenario http-5xx --name 'api 5xx' --logset-id logset-xxx --topic-id topic-xxx --threshold 10 --window-minutes 5 --notice-id notice-xxx
+uv run cls alarm policy scaffold --scenario http-5xx --name 'api 5xx' --logset-id logset-xxx --topic-id topic-xxx --threshold 10 --window-minutes 5 --monitor-period 1 --alarm-period 15 --notice-id notice-xxx
 uv run cls alarm policy scaffold --name '支付失败告警' --logset-id logset-xxx --topic-id topic-xxx --query 'service:payment | select count(*) as fail_count' --condition '$1.fail_count > 10' --notice-id notice-xxx
 uv run cls alarm policy scaffold --name '域名5xx多级告警' --logset-id logset-xxx --topic-id topic-xxx --query 'host:"a.example.com" AND status>=500 | select count(*) as error_count, request_uri group by request_uri' --condition '$1.error_count > 100' --multi-condition-expr '$1.error_count > 100' --multi-condition-level 1 --multi-condition-expr '$1.error_count > 500' --multi-condition-level 2 --group-by request_uri
 uv run cls alarm policy validate --payload @alarm-policy.json

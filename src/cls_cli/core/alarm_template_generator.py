@@ -54,6 +54,8 @@ def scaffold_alarm_policy(
     window_minutes: int,
     fields: list[str],
     notice_ids: list[str] | None = None,
+    monitor_period: int = 1,
+    alarm_period: int = 15,
 ) -> dict[str, Any]:
     scenario = scenario.lower()
     validate_generated_field_names(fields, path="fields")
@@ -78,9 +80,9 @@ def scaffold_alarm_policy(
                 "TopicId": topic_id,
             }
         ],
-        "MonitorTime": {"Type": "Period", "Time": max(1, min(window_minutes, 60))},
+        "MonitorTime": {"Type": "Period", "Time": max(1, min(monitor_period, 1440))},
         "TriggerCount": 1,
-        "AlarmPeriod": 15,
+        "AlarmPeriod": alarm_period,
         "Condition": f"$1.error_count > {threshold}",
         "AlarmLevel": 0,
         "Status": True,

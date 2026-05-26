@@ -1100,6 +1100,45 @@ def test_alarm_policy_scaffold_http_5xx(runner):
     assert "count(*) as error_count" in target["Query"]
     assert "group by request_uri,status" in target["Query"]
     assert payload["Condition"] == "$1.error_count > 10"
+    assert target["StartTimeOffset"] == -5
+    assert target["EndTimeOffset"] == 0
+    assert payload["MonitorTime"] == {"Type": "Period", "Time": 1}
+    assert payload["AlarmPeriod"] == 15
+
+
+def test_alarm_policy_scaffold_allows_explicit_timing_overrides(runner):
+    result = runner.invoke(
+        app,
+        [
+            "alarm",
+            "policy",
+            "scaffold",
+            "--scenario",
+            "http-5xx",
+            "--name",
+            "api 5xx",
+            "--logset-id",
+            "logset-123",
+            "--topic-id",
+            "topic-123",
+            "--threshold",
+            "10",
+            "--window-minutes",
+            "10",
+            "--monitor-period",
+            "5",
+            "--alarm-period",
+            "60",
+        ],
+    )
+
+    assert result.exit_code == 0, result.stdout
+    payload = json_output(result)["data"]["payload"]
+    target = payload["AlarmTargets"][0]
+    assert target["StartTimeOffset"] == -10
+    assert target["EndTimeOffset"] == 0
+    assert payload["MonitorTime"] == {"Type": "Period", "Time": 5}
+    assert payload["AlarmPeriod"] == 60
 
 
 def test_alarm_template_generate_uses_official_notice_content_types(runner):

@@ -82,6 +82,38 @@ def test_policy_scaffold_accepts_ai_generated_query_and_condition(runner):
     )
     assert payload["Condition"] == "$1.fail_count > 10"
     assert payload["AlarmNoticeIds"] == ["notice-123"]
+    assert payload["MonitorTime"] == {"Type": "Period", "Time": 1}
+    assert payload["AlarmPeriod"] == 15
+
+
+def test_policy_scaffold_accepts_explicit_alarm_period_for_query_mode(runner):
+    result = runner.invoke(
+        app,
+        [
+            "alarm",
+            "policy",
+            "scaffold",
+            "--name",
+            "payment failures",
+            "--logset-id",
+            "logset-123",
+            "--topic-id",
+            "topic-123",
+            "--query",
+            "service:payment | select count(*) as fail_count",
+            "--condition",
+            "$1.fail_count > 10",
+            "--monitor-period",
+            "2",
+            "--alarm-period",
+            "60",
+        ],
+    )
+
+    assert result.exit_code == 0, result.stdout
+    payload = json_output(result)["data"]["payload"]
+    assert payload["MonitorTime"] == {"Type": "Period", "Time": 2}
+    assert payload["AlarmPeriod"] == 60
 
 
 def test_policy_validate_rejects_invalid_generated_alias(runner, tmp_path):

@@ -44,7 +44,7 @@ def scaffold_policy_payload(
     notice_ids: list[str] | None,
     start_time_offset: int = -5,
     end_time_offset: int = 0,
-    monitor_period: int = 5,
+    monitor_period: int = 1,
     monitor_type: str = "Period",
     cron_expression: str | None = None,
     trigger_count: int = 1,

@@ -90,7 +90,7 @@ def scaffold_policy(
     condition: str | None = typer.Option(None, "--condition"),
     start_time_offset: int = typer.Option(-5, "--start-time-offset"),
     end_time_offset: int = typer.Option(0, "--end-time-offset"),
-    monitor_period: int = typer.Option(5, "--monitor-period"),
+    monitor_period: int = typer.Option(1, "--monitor-period"),
     monitor_type: str = typer.Option("Period", "--monitor-type"),
     cron_expression: str | None = typer.Option(None, "--cron-expression"),
     trigger_count: int = typer.Option(1, "--trigger-count"),
@@ -158,6 +158,8 @@ def scaffold_policy(
                 window_minutes=window_minutes,
                 fields=split_fields(fields, ["request_uri", "status"]),
                 notice_ids=notice_ids,
+                monitor_period=monitor_period,
+                alarm_period=alarm_period,
             )
         emit_data({"payload": payload}, output)
     except CliError as exc:
