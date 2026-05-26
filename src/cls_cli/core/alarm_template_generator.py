@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from cls_cli.core.alarm_policy import validate_generated_field_names
 from cls_cli.core.errors import InputError
 
 
@@ -55,6 +56,7 @@ def scaffold_alarm_policy(
     notice_ids: list[str] | None = None,
 ) -> dict[str, Any]:
     scenario = scenario.lower()
+    validate_generated_field_names(fields, path="fields")
     if scenario != "http-5xx":
         raise InputError(f"unsupported alarm policy scenario: {scenario}")
     group_fields = [field for field in fields if field != "error_count"]

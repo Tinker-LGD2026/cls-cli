@@ -15,6 +15,7 @@ from cls_cli.core.alarm_debug import (
 from cls_cli.core.alarm_policy import (
     has_blocking_policy_issues,
     scaffold_policy_payload,
+    validate_generated_field_names,
     validate_policy_payload,
 )
 from cls_cli.core.alarm_templates import scaffold_alarm_policy, split_fields
@@ -227,7 +228,9 @@ def _advanced_group_trigger_condition(
         return cast_str_list(_load_json_value(raw_json), "group-trigger-condition")
     if group_by is None:
         return None
-    return split_fields(group_by, [])
+    fields = split_fields(group_by, [])
+    validate_generated_field_names(fields, path="group-by")
+    return fields
 
 
 def _normalize_monitor_type(value: str) -> str:
@@ -259,6 +262,9 @@ def _advanced_analysis(
             }
         )
     if original_fields:
+        validate_generated_field_names(
+            split_fields(original_fields, []), path="analysis-original-fields"
+        )
         result.append(
             {
                 "Name": "original logs",

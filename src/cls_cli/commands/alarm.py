@@ -4,6 +4,7 @@ import typer
 
 from cls_cli.commands import alarm_bundle as alarm_bundle_commands
 from cls_cli.commands import alarm_debug as alarm_debug_commands
+from cls_cli.commands import alarm_discover as alarm_discover_commands
 from cls_cli.commands import alarm_history as alarm_history_commands
 from cls_cli.commands import alarm_integration as alarm_integration_commands
 from cls_cli.commands import alarm_notice as alarm_notice_commands
@@ -20,6 +21,7 @@ shield_app = typer.Typer(no_args_is_help=True, help="Manage alarm shields.")
 content_app = typer.Typer(no_args_is_help=True, help="Manage notice content templates.")
 callback_app = typer.Typer(no_args_is_help=True, help="Manage web callbacks.")
 integration_app = alarm_integration_commands.app
+discover_app = alarm_discover_commands.app
 bundle_app = alarm_bundle_commands.app
 template_app = alarm_template_commands.app
 debug_app = alarm_debug_commands.app
@@ -32,6 +34,7 @@ app.add_typer(shield_app, name="shield")
 app.add_typer(content_app, name="content")
 app.add_typer(callback_app, name="callback")
 app.add_typer(integration_app, name="integration")
+app.add_typer(discover_app, name="discover")
 app.add_typer(bundle_app, name="bundle")
 app.add_typer(template_app, name="template")
 app.add_typer(debug_app, name="debug")

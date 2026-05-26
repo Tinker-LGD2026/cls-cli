@@ -7,6 +7,7 @@ from typing import Any
 from cls_cli.core.errors import InputError
 
 STRICT_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+FIELD_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_.$-]{0,127}$")
 CONDITION_REF_RE = re.compile(r"\$(\d+)\.([A-Za-z_][A-Za-z0-9_]*)")
 AS_ALIAS_RE = re.compile(r"\bas\s+([^\s,]+(?:\s+[^\s,]+)*)", re.IGNORECASE)
 
@@ -206,6 +207,19 @@ def extract_condition_refs(condition: str) -> set[tuple[int, str]]:
 
 def is_strict_identifier(value: str) -> bool:
     return bool(STRICT_IDENTIFIER_RE.match(value))
+
+
+def is_safe_field_name(value: str) -> bool:
+    return bool(FIELD_NAME_RE.match(value))
+
+
+def validate_generated_field_names(fields: list[str], *, path: str) -> None:
+    for field in fields:
+        if not is_safe_field_name(field):
+            raise InputError(
+                f"invalid_field_name: {path} contains unsafe field name `{field}`; "
+                "use names matching ^[A-Za-z_][A-Za-z0-9_.$-]{0,127}$"
+            )
 
 
 def _target_number(target: dict[str, Any], index: int) -> int:

@@ -266,6 +266,54 @@ def test_policy_scaffold_builds_browser_confirmed_monitor_analysis_classificatio
     ]
 
 
+def test_policy_scaffold_rejects_unsafe_group_by_field(runner):
+    result = runner.invoke(
+        app,
+        [
+            "alarm",
+            "policy",
+            "scaffold",
+            "--name",
+            "unsafe group",
+            "--logset-id",
+            "logset-123",
+            "--topic-id",
+            "topic-123",
+            "--query",
+            "* | select count(*) as error_count",
+            "--condition",
+            "$1.error_count > 0",
+            "--group-by",
+            "request_uri; drop",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "invalid_field_name" in result.stdout
+
+
+def test_policy_scaffold_rejects_unsafe_generated_field(runner):
+    result = runner.invoke(
+        app,
+        [
+            "alarm",
+            "policy",
+            "scaffold",
+            "--name",
+            "unsafe fields",
+            "--logset-id",
+            "logset-123",
+            "--topic-id",
+            "topic-123",
+            "--fields",
+            "request_uri,field\nname",
+        ],
+    )
+
+    assert result.exit_code == 1
+    assert "invalid_field_name" in result.stdout
+
+
 def test_policy_scaffold_rejects_mismatched_multi_condition_levels(runner):
     result = runner.invoke(
         app,

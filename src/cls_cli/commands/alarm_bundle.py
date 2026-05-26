@@ -3,6 +3,7 @@ from __future__ import annotations
 import typer
 
 from cls_cli.core.alarm_bundle_apply import apply_alarm_bundle, rollback_alarm_bundle
+from cls_cli.core.alarm_bundle_dry_run import dry_run_alarm_bundle
 from cls_cli.core.alarm_bundle_plan import plan_alarm_bundle
 from cls_cli.core.alarm_integrations import sanitize_sensitive
 from cls_cli.core.config import store_from_obj
@@ -22,6 +23,23 @@ def plan_bundle(
     try:
         result = plan_alarm_bundle(load_json_payload(bundle))
         emit_data(result, output)
+        if not result["valid"]:
+            raise typer.Exit(1)
+    except CliError as exc:
+        emit_error(exc)
+        raise typer.Exit(exc.exit_code) from exc
+
+
+@app.command("dry-run")
+def dry_run_bundle(
+    bundle: str = typer.Option(..., "--bundle"),
+    region: str | None = typer.Option(None, "--region"),
+    output: str = typer.Option("json", "--output"),
+) -> None:
+    try:
+        body = load_json_payload(bundle)
+        result = dry_run_alarm_bundle(body, region=region)
+        emit_data(sanitize_sensitive(result), output)
         if not result["valid"]:
             raise typer.Exit(1)
     except CliError as exc:
